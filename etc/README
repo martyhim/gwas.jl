@@ -1,0 +1,5 @@
+# Miscellaneous files
+
+.bashrc          - Include lines following <### GWAS analysis & Julia> line to .bashrc file in user home directory
+.juliarc.jl      - Add lines from this file to your .juliarc.jl file in your home directory
+.juliarc_more.jl - If this file exists in your home directory it will be run as part of Julia initialization after .juliarc.jl
