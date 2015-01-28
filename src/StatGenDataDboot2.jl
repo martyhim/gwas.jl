@@ -7,7 +7,7 @@ using NLopt
 
 module StatGenDataD
 
-	# mwh - conf file! Change 3
+	# mwh - conf file! Change 4
 	using IniFile
 	ini = Inifile()
 	read(ini, ENV["JULIA_APP_BOOTSTRAP"]) # conf file name
