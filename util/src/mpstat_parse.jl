@@ -214,12 +214,19 @@ function mpstats(;interval=10)
 
             end # if line_idx == 1
 
-            mpstat_info["summary"] = [
+            # deprecated syntax
+#            mpstat_info["summary"] = [
+#                "cpu_count" => int(cpu_count),
+#                "hostname"  => hostname,
+#                "date"      => date,
+#                "time"      => time()
+#            ]
+            mpstat_info["summary"] = Dict(
                 "cpu_count" => int(cpu_count),
                 "hostname"  => hostname,
                 "date"      => date,
                 "time"      => time()
-            ]
+            )
 
             #println( "os_name: $os_name, os_version: $os_version, hostname: $hostname, date: $date, cpu_type: $cpu_type, cpu_count: $cpu_count")
 
@@ -228,7 +235,7 @@ function mpstats(;interval=10)
             continue
 
         # The last set of statistics starts with "Average:" This is the data we'll report
-        elseif !beginswith(line, "Average:")
+        elseif !startswith(line, "Average:")
             continue
 
         # Get order of output stats on each line by parsing line with column labels
@@ -247,13 +254,13 @@ function mpstats(;interval=10)
         else
             #println("CPU #: ", [split(line)][cpu_idx])
             stats = split(line)
-            this_one = [
+            this_one = Dict(
                 "CPU" => stats[cpu_idx],
                 "usr" => stats[usr_idx],
                 "sys" => stats[sys_idx],
                 "iowait" => stats[iowait_idx],
                 "idle"   => stats[idle_idx]
-            ]
+            )
             push!(cpu_stats, this_one)
 
         end

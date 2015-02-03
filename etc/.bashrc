@@ -13,6 +13,7 @@ umask 0007
 # Marty's additions
 module load julia
 
+
 # Marty's additions
 export JULIA_APP_BOOTSTRAP=/home/mhimmelstein/CodeandSampleData/conf/taylor_work.conf
 

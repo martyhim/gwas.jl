@@ -1,5 +1,5 @@
 # Scratch file to interactively run code during development
-# include("/home/mhimmelstein/taylor/scratch/temp_julia_init.jl")
+# include("/home/mhimmelstein/gwas.jl/temp_julia_init.jl")
 
 nodelist = get_slurm_nodelist()
 rp = addprocs(nodelist) # this will add one proc per node
