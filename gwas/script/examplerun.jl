@@ -81,7 +81,7 @@ if sum(aa[:log10pval].>6.3)>0 writetable("sig6.3cdr_ab42addrqtl12000.txt",aa[aa[
 #example of running LRTmv test (which also does LRTv at same time)
 #these are the formulas
 form_lsubtau=lsubtau~age+gender+Series+PC1+PC2+APOE2+APOE4+snp
-form_lsubptau=lsubptau~age+gender+Series+PC1+PC2+APOE2+APOE4+snp
+form_lsubtau=lsubtau~age+gender+Series+PC1+PC2+APOE2+APOE4+snp
 form_lsubab42=lsubAb42~age+gender+Series+PC1+PC2+APOE2+APOE4+snp
 
 

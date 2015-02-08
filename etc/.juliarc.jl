@@ -6,6 +6,8 @@ read(ini, ENV["JULIA_APP_BOOTSTRAP"])
 include_dir = get(ini, "data", "include_dir")
 app_dir     = get(ini, "data", "app_dir")
 util_include_dir = get(ini, "data", "util_include_dir")
+data_dir     = get(ini, "data", "data_dir")
+
 # Put on search path - CHD analysis, which is only necessary for CHD analysis
 push!(LOAD_PATH, include_dir)
 push!(LOAD_PATH, util_include_dir)

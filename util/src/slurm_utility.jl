@@ -1,6 +1,6 @@
 module SlurmUtility
 
-export get_slurm_nodelist, remove_master_from_nodelist, tcp_connect_hostname
+export get_slurm_nodelist, slurm_nodelist_for_addprocs, remove_master_from_nodelist, tcp_connect_hostname
 
 function parseNodeList(s)
     s = replace(s,"]","")
@@ -38,6 +38,12 @@ function get_slurm_nodelist()
     # I think it's the tmux console manager that can cause SLURM_NODELIST to report inaccurate results
     # SLURM_STEP_NODELIST only includes the nodes for a particular step
     return [hn for hn in split(readall(`scontrol show hostname $(ENV["SLURM_NODELIST"])`))]
+end
+
+# Return vector of tuples of nodename and :auto symbol, which tells addprocs for each
+# machine to start one process for each core
+function slurm_nodelist_for_addprocs()
+    [(hn, :auto) for hn in split(readall(`scontrol show hostname $(ENV["SLURM_NODELIST"])`))]
 end
 
 # Return nodelist with this node removed

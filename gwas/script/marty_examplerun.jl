@@ -16,14 +16,17 @@ require ("slurm_utility.jl")
 require ("mpstat_parse.jl")
 using SlurmUtility
 
-
 #
 #       Add processors
-# get compute nodes assigned to job, one with master, one w/o
-# TODO(mwh): Make loop to create multiple processes on each node, including local one
-#
-nodelist = get_slurm_nodelist()
-addprocs(nodelist) # this will add one proc per node
+nodelist = slurm_nodelist_for_addprocs()
+@time rp = convert(Array{Int,1}, addprocs(nodelist))
+
+require("app_utility.jl"); @everywhere using AppUtility
+
+@time sendto(rp, include_dir=include_dir)
+
+@time @everywhere include(joinpath(include_dir, "StatGenDataDboot2.jl"));
+
 
 # These modules might have been loaded at startup, but need to be again
 # after remote nodes are added
@@ -32,23 +35,11 @@ require("mpstat_parse.jl"); @everywhere using UtilModule
 require("t.jl"); @everywhere using T
 @everywhere using UtilModule # The using should happen after procs are setup
 
-remote_nodelist = remove_master_from_nodelist(nodelist)
-# Add some local and some remote processes
-@time lp = addprocs(5)
-rnl = [remote_nodelist, remote_nodelist, remote_nodelist, remote_nodelist, remote_nodelist]
-@time rp = addprocs(rnl)
-
-#
-# @everywhere macro isn't clever enough, to do variable substitution locally
-# TODO(mwh) Build wrapper for @everywhere macro that does local variable substitution
-#
-@time @everywhere include("/home/mhimmelstein/CodeandSampleData/current/StatGenDataDboot2.jl")
-@everywhere include("$(include_dir)StatGenDataDboot2.jl")
 
 @everywhere using StatGenDataD
+@time kdat=dGenDat("$(data_dir)smallAZdatasets/az12000snp")
 
-@time kdat=dGenDat("$(app_dir)smallAZdatasets/az12000snp")
-phecorefile ="$(app_dir)smallAZdatasets/CSFSep06_2013_v1.1coreNAapo.txt"
+phecorefile ="$(data_dir)smallAZdatasets/CSFSep06_2013_v1.1coreNAapo.txt"
 #this joins the phenotype data with the genotype data in the GenDat type on each process in the .fam field
 @time addphe!(phecorefile,kdat);
 @time updatecounts!(kdat);

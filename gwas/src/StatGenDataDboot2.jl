@@ -36,7 +36,7 @@ module StatGenDataD
 	import GLM.coef
 	import DataFrames.allvars
 	using NLopt
-	
+
 
 #from dGenDat2.jl
 export dGenDat  #type and function for distributed GenDat, also uses GenDat type
@@ -135,22 +135,16 @@ export dParBootLM
 export BootsLM
 export ParBootLM
 
-#you need to make this the path to: /CodeandSampleData/current/
-#cdir="/Users/madmax/Desktop/desktopSep10/Houston/GWU/GWUtranfer/GWUBudget/MartyHimmelstein/CodeandSampleData/current/"
-cdir="C:/taylor/CodeandSampleData/current/"
-#cdir="/home/mhimmelstein/CodeandSampleData/current/"
-
-
+# include_dir has julia gwas source code
 #fixed using symbols in DataFrames
-include(joinpath(include_dir, "dGenDat3.jl"))
-#include("$(cdir)dGenDat3.jl")  #has primary type for importing genetic data
-include("$(cdir)dModifyGenDat3.jl")  #has functions for importing phenotype data, filters, counts
-include("$(cdir)btGen6.jl")   #has functions for converting from binary to integers genotype data
-include("$(cdir)dgenglm9.jl")  #has functions for doing Linear model & logistic regression gwas
-include("$(cdir)LRTtests4.jl")  #functions for the LRTmv, LRTv, & LRTm tests
-include("$(cdir)dgwLRTmv4.jl")   #applies LRT tests to gwas data
-include("$(cdir)ParBootLRTmv4.jl")  #functions to do Parametric bootstrap for LRTmv & LRTv
-include("$(cdir)ParBootLM2.jl")  #functions to do Parametric bootstrap for linear models
-#include("$(cdir)ParBootLogistic2.jl")  #functions to do Parametric bootstrap for logistic regression, have not tested well
+include(joinpath(include_dir, "dGenDat3.jl"))         # has primary type for importing genetic data
+include(joinpath(include_dir, "dModifyGenDat3.jl"))   # functions for importing phenotype data, filters, counts
+include(joinpath(include_dir, "btGen6.jl"))           # functions for converting from binary to integers genotype data
+include(joinpath(include_dir, "dgenglm9.jl"))         # functions for doing Linear model & logistic regression gwas
+include(joinpath(include_dir, "LRTtests4.jl"))        # functions for the LRTmv, LRTv, & LRTm tests
+include(joinpath(include_dir, "dgwLRTmv4.jl"))        # applies LRT tests to gwas data
+include(joinpath(include_dir, "ParBootLRTmv4.jl"))    # functions to do Parametric bootstrap for LRTmv & LRTv
+include(joinpath(include_dir, "ParBootLM2.jl"))       # functions to do Parametric bootstrap for linear models
+include(joinpath(include_dir, "ParBootLogistic2.jl")) # functions to do Parametric bootstrap for logistic regression, have not tested well
 
-end
+end   # module StatGenDataD
