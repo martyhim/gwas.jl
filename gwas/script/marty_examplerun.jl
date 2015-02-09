@@ -28,7 +28,6 @@ require("app_utility.jl"); @everywhere using AppUtility
 @time @everywhere include(joinpath(include_dir, "StatGenDataDbootGGanova.jl"))
 @time @everywhere using StatGenDataD
 
-
 @time kdat=dGenDat("$(data_dir)smallAZdatasets/az12000snp");
 @time kdat=dGenDat(joinpath(data_dir, "smallAZdatasets/az12000snp"))
 phecorefile = joinpath(data_dir, "smallAZdatasets/CSFSep06_2013_v1.1coreNAapo.txt")

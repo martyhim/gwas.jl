@@ -1,36 +1,46 @@
-#start julia with more than one processor with the -p flag
-#julia -p 2
-#this is path to the CodeandSampleData folder which has the code in the current folder and data in the smallAZdatasets folder
-dir="/Users/lily/Desktop/desktopSep10/Houston/GWU/GWUtranfer/GWUBudget/MartyHimmelstein/CodeandSampleData2/"
+#
+# Run Julia on the Colonial One Cluster, using Slurm as a Job Manager
+# Example Slurm commands to allocate nodes on the cluster
+# sinfo # returns nodes, including those that are free
+# salloc --time=4:00:00 -N 4 -p 128gb # Allocate 4 nodes on the 128gb cluster for four hours
+# We got a jobid, start an interactive shell on the first node (this is purely a convention
+# srun --jobid 734682 -N 1 -w node041 --pty /bin/bash                          
 
-#this tell julia to load all of the data in the StatGenDataDbootGGanova.jl file on all processes
-#@everywhere include("$(dir)current/StatGenDataDbootGGanova.jl")
-#for some reasion I cannot add put a variable in the the include function (in this case joining dir and the rest of the path)
-#you will need to open StatGenDataDbootGGanova.jl and change the cdir variable on line 151to your path with /CodeandSampleData/current/
-#StatGenDataDbootGGanova.jl  defines the module, what packages to use and the functions to export and at the bottom what files to load for it.
+# Julia routines for Slurm processing
+require ("slurm_utility.jl")
+using SlurmUtility
 
-@everywhere include("/Users/lily/Desktop/desktopSep10/Houston/GWU/GWUtranfer/GWUBudget/MartyHimmelstein/CodeandSampleData2/current/StatGenDataDbootGGanova.jl")
-#this tells it to use the model in StatGenDataDboot.jl called StatGenDataD onto all process (this takes a while)
-@everywhere using StatGenDataD
+#       Add cluster nodes
+nodelist = slurm_nodelist_for_addprocs() # Tell julia to spin up one process for each core per machine
+@time rp = convert(Array{Int,1}, addprocs(nodelist))
+
+# Note: I don't think AppUtility needs to be @everywhere
+@time require("app_utility.jl"); @everywhere using AppUtility
+
+# define include_dir variable on all processes
+@time sendto(rp, include_dir=include_dir)
+@time @everywhere include(joinpath(include_dir, "StatGenDataDbootGGanova.jl"))
+@time @everywhere using StatGenDataD
 
 #this make an instance of dGenDat which distributes pieces fo the data in GenDat types on each processor from the 
 #az1000snp.bed , az1000snp.bim & az1000snp.fam files
-#in this case I can use the dir variable to make a new path
-@time kdat=dGenDat("$(dir)smallAZdatasets/az12000snp");
-#this names the phenotype data file
-phecorefile ="$(dir)smallAZdatasets/CSFSep06_2013_v1.1coreNAapo.txt"
+@time kdat=dGenDat(joinpath(data_dir, "smallAZdatasets/az12000snp"))
+phecorefile = joinpath(data_dir, "smallAZdatasets/CSFSep06_2013_v1.1coreNAapo.txt")
 
 #this joins the phenotype data with the genotype data in the GenDat type on each process in the .fam field
-@time addphe!(phecorefile,kdat);
+@time addphe!(phecorefile,kdat)
+
 #this updates the allele and genotype counts after the merge of snp and phenoytpe data
 #this can change the .snp field in GenDat
-@time updatecounts!(kdat);
+@time updatecounts!(kdat)
+
 #this applies a missing threshold of 5% for each snp i.e., each snp with >5% missing is no included
 #this can change the .snp field in GenDat
-missingthreshhold!(0.05,kdat);
+missingthreshhold!(0.05,kdat)
+
 #this applies a minor allele frequency threshhold to each snp, those less than 1% MAF are not included
 #this can change the .snp field in GenDat
-MAFthreshhold!(0.01,kdat);
+MAFthreshhold!(0.01,kdat)
 
 #6000 snps are sent to each of the two processes
 #note that after the missing and MAF thresholds the 12000 snps
@@ -57,20 +67,20 @@ form_cdr_ab42=CDR12~age+gender+Series+PC1+PC2+APOE2+APOE4+lsubAb42+snp+lsubAb42&
 #I parameterize it as a single 0,1,2 index with 1 degree of freedom, otherwise I could specify  asfactor=true
 #and then the snp genotypes would be treated as factors and if 3 genotypes then it will have 2 df.
 #the results are stored in a dGWAS type spread across the processes
-@time ptau_ab42add12000=gwLM(form_ptau_ab42,1,kdat,responsetype=:linear);
+@time ptau_ab42add12000=gwLM(form_ptau_ab42,1,kdat,responsetype=:linear)
 
 #this take the results from each process and writes them to a file.
 writeresults("ptau_ab42addrqtl12000.txt",ptau_ab42add12000)
 #if I want to I could put it all in one dataframe on the main process by:
-ptau_ab42add12000results=getresults(ptau_ab42add12000);
+ptau_ab42add12000results=getresults(ptau_ab42add12000)
 #if on the main process, I could filter or do whatever I want with it.
 
 #this is a model using logistic regression (much slower than LM)
 #@time cdr_ab42add=gwLMp(form_cdr_ab42,1,kdat,responsetype="logistic");
-@time cdr_ab42add12000=gwLM(form_cdr_ab42,1,kdat,responsetype=:logistic);
+@time cdr_ab42add12000=gwLM(form_cdr_ab42,1,kdat,responsetype=:logistic)
 
-writeresults("cdr_ab42addrqtl12000.txt",cdr_ab42add12000)
-aa=getresults(cdr_ab42add12000)
+@time writeresults("cdr_ab42addrqtl12000.txt",cdr_ab42add12000)
+@time aa=getresults(cdr_ab42add12000)
 if sum(aa[:log10pval].>7.3)>0 writetable("sig7.3cdr_ab42addrqtl12000.txt",aa[aa[:log10pval].>7.3,:],separator='\t') end
 if sum(aa[:log10pval].>6.3)>0 writetable("sig6.3cdr_ab42addrqtl12000.txt",aa[aa[:log10pval].>6.3,:],separator='\t') end
 
@@ -86,9 +96,9 @@ form_lsubab42=lsubAb42~age+gender+Series+PC1+PC2+APOE2+APOE4+snp
 
 
 #uses formula, data in kdat, defines whether snp is additve or genotype, sets genotype limit per snp
-@time vlsubab42add12000=gwLRTmv(form_lsubab42,kdat,AddorGen=:Add,genlimit=20);
-writeresults("lsubab42addvqtl12000.txt",vlsubab42add12000);
-aa=getresults(vlsubab42add12000);
+@time vlsubab42add12000=gwLRTmv(form_lsubab42,kdat,AddorGen=:Add,genlimit=20)
+@time writeresults("lsubab42addvqtl12000.txt",vlsubab42add12000)
+aa=getresults(vlsubab42add12000)
 #this can be used to pull of snps with pvalue (in -log10pval) greater than some threshold
 if sum(aa[:LRTmvPval].>7.3)>0 writetable("sig7.3lsubab42addvqtlMV12000.txt",aa[aa[:LRTmvPval].>7.3,:],separator='\t') end
 if sum(aa[:LRTmvPval].>6.3)>0 writetable("sig6.3vlsubab42addvqtlMV12000.txt",aa[aa[:LRTmvPval].>6.3,:],separator='\t') end
