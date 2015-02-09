@@ -83,15 +83,30 @@ function ParBootLRT(form::Formula,df::AbstractDataFrame,nboot::Int=10000; test::
 	#different pvalues to get threshold values in the distribution
 	#the last on is where we are comfortable calling a pvalue given the # of bootstraps
 	pvalcuts=[0.05,0.01,(1/nwork)*100,(1/nwork)*10]
+	
 
 	#if any specific pvalues are imputed, it is put at the end
-	if cuttoff[1]!=-1.0 pvalcuts=[pvalcuts,cuttoff] end
+	if cuttoff[1]!=-1.0 	
+		if cuttoff[1]>=1 pvalcuts=[pvalcuts,10.^-cuttoff] #if input is as -log10 it converts back
+		else
+			pvalcuts=[pvalcuts,cuttoff]
+		 end		
+	end
 
-	vals=tdist[floor(pvalcuts.*nwork)]
+	pvallogs=-log10(pvalcuts)
+
+
+	vals=zeros(Float64,length(pvalcuts))
+
+	for i in 1:length(vals)
+		x=floor(pvalcuts[i].*nwork)
+		if x>0 vals[i]=tdist[x] else vals[i]=0.0 end
+	end
+
 	#vals=quantile(tdist,1.-pvalcuts);
-	vals=hcat(pvalcuts,vals)
-	pval=sum(ostat.<=tdist)/nwork;
-	return(pval,vals,nboot,nwork,nfail)
+	vals=hcat(pvalcuts,pvallogs,vals)
+	PBpval=sum(ostat.<=tdist)/nwork;
+	return(PBpval,vals,nboot,nwork,nfail)
 end
 
 

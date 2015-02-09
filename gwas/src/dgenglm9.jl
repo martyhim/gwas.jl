@@ -299,24 +299,24 @@ end
 
 
 
-
+#write results for dGWAS
 function writeresults(outfile::String,gw::dGWAS)
     @spawnat gw.resref[1].where writetable(outfile,fetch(gw.resref[1]),separator='\t')
     nn=gw.snpidx[1,1]
-    sleep(10)
+    sleep(2)
     for i=2:length(gw.resref)
        if countlines(outfile)==nn+1
             @spawnat gw.resref[i].where writeresults(outfile,fetch(gw.resref[i]))
             nn=sum(gw.snpidx[1:i,:])
         else
-            sleep(10)
+            sleep(2)
             @spawnat gw.resref[i].where writeresults(outfile,fetch(gw.resref[i]))
             nn=sum(gw.snpidx[1:i,:])
         end
     end
 end
 
-#used in writeresults for dGWAS
+#used in writeresults for GWAS
 function writeresults(outfile::String,df::DataFrame)
     io=open(outfile, "a")
     printtable(io,df,separator='\t',quotemark='"',header=false)

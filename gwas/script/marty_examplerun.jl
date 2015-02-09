@@ -25,17 +25,30 @@ require("app_utility.jl"); @everywhere using AppUtility
 
 @time sendto(rp, include_dir=include_dir)
 
-@time @everywhere include(joinpath(include_dir, "StatGenDataDboot2.jl"));
+@time @everywhere include(joinpath(include_dir, "StatGenDataDbootGGanova.jl"))
+@time @everywhere using StatGenDataD
 
 
-# These modules might have been loaded at startup, but need to be again
-# after remote nodes are added
-reload("slurm_utility.jl"); @everywhere using SlurmUtility
-require("mpstat_parse.jl"); @everywhere using UtilModule
-require("t.jl"); @everywhere using T
-@everywhere using UtilModule # The using should happen after procs are setup
+@time kdat=dGenDat("$(data_dir)smallAZdatasets/az12000snp");
+@time kdat=dGenDat(joinpath(data_dir, "smallAZdatasets/az12000snp"))
+phecorefile = joinpath(data_dir, "smallAZdatasets/CSFSep06_2013_v1.1coreNAapo.txt")
 
+#this joins the phenotype data with the genotype data in the GenDat type on each process in the .fam field
+@time addphe!(phecorefile,kdat);
 
+#this updates the allele and genotype counts after the merge of snp and phenoytpe data
+#this can change the .snp field in GenDat
+@time updatecounts!(kdat);
+
+#this applies a missing threshold of 5% for each snp i.e., each snp with >5% missing is no included
+#this can change the .snp field in GenDat
+missingthreshhold!(0.05,kdat);
+
+#this applies a minor allele frequency threshhold to each snp, those less than 1% MAF are not included
+#this can change the .snp field in GenDat
+MAFthreshhold!(0.01,kdat);
+
+-----
 @everywhere using StatGenDataD
 @time kdat=dGenDat("$(data_dir)smallAZdatasets/az12000snp")
 

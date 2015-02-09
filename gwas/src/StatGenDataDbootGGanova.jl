@@ -7,7 +7,7 @@ using NLopt
 
 module StatGenDataD
 
-	# mwh - conf file! Change 6
+	# mwh - conf file
 	using IniFile
 	ini = Inifile()
 	read(ini, ENV["JULIA_APP_BOOTSTRAP"]) # conf file name
@@ -135,6 +135,36 @@ export dParBootLM
 export BootsLM
 export ParBootLM
 
+#functions from prepGGdgenglm21Aug14.jl
+#implements GxG where both snps are treated as factors and all 2locGenotypes with count<lim are called NA
+
+#functions from prepGGdgenglm21Aug14write.jl
+#make own indicators for each snp 0,1 for het and hom22, if hom22 < 20 then exclude
+#makes AaBb, Aabb, aaBb, & aabb interactions, if count less than five then exclude that interaction
+
+export gwLMGxG
+export twogencount!
+export twogencount
+export GxG
+
+#from ParBootGxGLM.jl
+export BootPieceGxGLM
+export dParBootGxGLM
+export ParBootGxGLM
+#export permboot! (for dif type, already exported in ParBootLM)
+
+
+#you need to make this the path to: /CodeandSampleData/current/
+#cdir="/Users/lily/Desktop/desktopSep10/Houston/GWU/GWUtranfer/GWUBudget/MartyHimmelstein/CodeandSampleData2/current/"
+
+
+#laptop
+#cdir="/Users/lily/StatGenData.jl/src/current/"
+#mac pro
+#cdir="/Users/sage/StatGenData.jl/src/current/"
+#server
+#cdir="/home/tmaxwell/StatGenData/src/current/"
+
 # include_dir has julia gwas source code
 #fixed using symbols in DataFrames
 include(joinpath(include_dir, "dGenDat3.jl"))         # has primary type for importing genetic data
@@ -145,6 +175,8 @@ include(joinpath(include_dir, "LRTtests4.jl"))        # functions for the LRTmv,
 include(joinpath(include_dir, "dgwLRTmv4.jl"))        # applies LRT tests to gwas data
 include(joinpath(include_dir, "ParBootLRTmv4.jl"))    # functions to do Parametric bootstrap for LRTmv & LRTv
 include(joinpath(include_dir, "ParBootLM2.jl"))       # functions to do Parametric bootstrap for linear models
-include(joinpath(include_dir, "ParBootLogistic2.jl")) # functions to do Parametric bootstrap for logistic regression, have not tested well
+#include(joinpath(include_dir, "ParBootLogistic2.jl")) # functions to do Parametric bootstrap for logistic regression, have not tested well
+include(joinpath(include_dir, "prepGGdgenglm21Aug14anova.jl"))
+include(joinpath(include_dir, "ParBootGxGLM.jl"))
 
-end   # module StatGenDataD
+end  # module StatGenDataD

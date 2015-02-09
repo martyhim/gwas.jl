@@ -1,18 +1,15 @@
 #start julia with more than one processor with the -p flag
 #julia -p 2
 #this is path to the CodeandSampleData folder which has the code in the current folder and data in the smallAZdatasets folder
-dir="/Users/madmax/Desktop/desktopSep10/Houston/GWU/GWUtranfer/GWUBudget/MartyHimmelstein/CodeandSampleData/"
-dir="/home/mhimmelstein/CodeandSampleData/" # On Colonial One
+dir="/Users/lily/Desktop/desktopSep10/Houston/GWU/GWUtranfer/GWUBudget/MartyHimmelstein/CodeandSampleData2/"
 
-#this tell julia to load all of the data in the StatGenDataDboot2.jl file on all processes
-#@everywhere include("$(dir)current/StatGenDataDboot2.jl")
+#this tell julia to load all of the data in the StatGenDataDbootGGanova.jl file on all processes
+#@everywhere include("$(dir)current/StatGenDataDbootGGanova.jl")
 #for some reasion I cannot add put a variable in the the include function (in this case joining dir and the rest of the path)
-#you will need to open StatGenDataDboot2.jl and change the cdir variable on line 132 to your path with /CodeandSampleData/current/
-#StatGenDataDboot2.jl  defines the module, what packages to use and the functions to export and at the bottom what files to load for it.
+#you will need to open StatGenDataDbootGGanova.jl and change the cdir variable on line 151to your path with /CodeandSampleData/current/
+#StatGenDataDbootGGanova.jl  defines the module, what packages to use and the functions to export and at the bottom what files to load for it.
 
-# On Colonial One Cluster, for now
-@everywhere include("/home/mhimmelstein/CodeandSampleData/current/StatGenDataDboot2.jl")
-@everywhere include("/Users/madmax/Desktop/desktopSep10/Houston/GWU/GWUtranfer/GWUBudget/MartyHimmelstein/CodeandSampleData/current/StatGenDataDboot2.jl")
+@everywhere include("/Users/lily/Desktop/desktopSep10/Houston/GWU/GWUtranfer/GWUBudget/MartyHimmelstein/CodeandSampleData2/current/StatGenDataDbootGGanova.jl")
 #this tells it to use the model in StatGenDataDboot.jl called StatGenDataD onto all process (this takes a while)
 @everywhere using StatGenDataD
 
@@ -61,6 +58,7 @@ form_cdr_ab42=CDR12~age+gender+Series+PC1+PC2+APOE2+APOE4+lsubAb42+snp+lsubAb42&
 #and then the snp genotypes would be treated as factors and if 3 genotypes then it will have 2 df.
 #the results are stored in a dGWAS type spread across the processes
 @time ptau_ab42add12000=gwLM(form_ptau_ab42,1,kdat,responsetype=:linear);
+
 #this take the results from each process and writes them to a file.
 writeresults("ptau_ab42addrqtl12000.txt",ptau_ab42add12000)
 #if I want to I could put it all in one dataframe on the main process by:
@@ -70,6 +68,7 @@ ptau_ab42add12000results=getresults(ptau_ab42add12000);
 #this is a model using logistic regression (much slower than LM)
 #@time cdr_ab42add=gwLMp(form_cdr_ab42,1,kdat,responsetype="logistic");
 @time cdr_ab42add12000=gwLM(form_cdr_ab42,1,kdat,responsetype=:logistic);
+
 writeresults("cdr_ab42addrqtl12000.txt",cdr_ab42add12000)
 aa=getresults(cdr_ab42add12000)
 if sum(aa[:log10pval].>7.3)>0 writetable("sig7.3cdr_ab42addrqtl12000.txt",aa[aa[:log10pval].>7.3,:],separator='\t') end
@@ -81,7 +80,7 @@ if sum(aa[:log10pval].>6.3)>0 writetable("sig6.3cdr_ab42addrqtl12000.txt",aa[aa[
 #example of running LRTmv test (which also does LRTv at same time)
 #these are the formulas
 form_lsubtau=lsubtau~age+gender+Series+PC1+PC2+APOE2+APOE4+snp
-form_lsubtau=lsubtau~age+gender+Series+PC1+PC2+APOE2+APOE4+snp
+form_lsubptau=lsubptau~age+gender+Series+PC1+PC2+APOE2+APOE4+snp
 form_lsubab42=lsubAb42~age+gender+Series+PC1+PC2+APOE2+APOE4+snp
 
 
@@ -95,6 +94,10 @@ if sum(aa[:LRTmvPval].>7.3)>0 writetable("sig7.3lsubab42addvqtlMV12000.txt",aa[a
 if sum(aa[:LRTmvPval].>6.3)>0 writetable("sig6.3vlsubab42addvqtlMV12000.txt",aa[aa[:LRTmvPval].>6.3,:],separator='\t') end
 if sum(aa[:LRTvPval].>7.3)>0 writetable("sig7.3lsubab42addvqtlV12000.txt",aa[aa[:LRTvPval].>7.3,:],separator='\t') end
 if sum(aa[:LRTvPval].>6.3)>0 writetable("sig6.3vlsubab42addvqtlV12000.txt",aa[aa[:LRTvPval].>6.3,:],separator='\t') end
+
+#form_ptau_ab42=lsubptau~age+gender+Series+PC1+PC2+APOE2+APOE4+lsubAb42+snp+lsubAb42&snp
+#need to pull down into dataframe and 
+ParBootLM(form_ptau_ab42,EAd[idx],[10],200000000)[1]
 
 
 

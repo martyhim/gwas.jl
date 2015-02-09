@@ -123,7 +123,7 @@ function GenDat(file::ASCIIString) # file = base file name without extension
        #fam=readdlm(famfile,' ')
     dfctype!(Int8,[:chr],snp)  #changes these columns to Int8
     fnames=[:fID,:ID,:pID,:mID,:sex,:phe]
-    fam=readtable(famfile,separator=' ',header=false,colnames=fnames)
+    fam=readtable(famfile,separator=' ',header=false,names=fnames)
     if size(fam,2) != 6
         error("file $famfile should have 6 space-delimited columns")
     end
